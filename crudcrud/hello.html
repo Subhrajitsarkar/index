@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hello</title>
+</head>
+
+<body>
+
+    <form action="#" onsubmit="onsignup(event)">
+        <div><br>
+            <label for="name">Name</label>
+            <input type="text" name="name" id="name">
+        </div><br>
+        <div>
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email">
+
+        </div><br>
+        <div>
+            <label for="age">Age</label>
+            <input type="number" name="age" id="age">
+        </div><br>
+        <div>
+            <label for="date">Birthday</label>
+            <input type="date" name="date" id="date">
+        </div><br>
+        <div>
+            <label>
+                Password
+                <input type="password" name="password" required>
+            </label>
+        </div><br>
+        <div>
+            <label for="banana">Banana</label>
+            <input type="checkbox" name="banana" id="banana">
+            <label for="apple">Apple</label>
+            <input type="checkbox" name="apple" id="apple">
+        </div><br>
+        <div>
+            <label for="male">Male</label>
+            <input type="radio" name="gander" id="male">
+            <label for="female">Female</label>
+            <input type="radio" name="gander" id="female">
+        </div><br>
+        <div>
+            <label for="eye Color">Eye color</label>
+            <select name="eyecolor" id="eyecolor">
+                <option value="green">Green</option>
+                <option value="red">Red</option>
+            </select>
+        </div><br>
+        <div>
+            <label for="bio">Bio</label>
+            <textarea name="bio" id="bio"></textarea>
+        </div><br>
+        <div>
+            <label for="file">File</label>
+            <input type="file" name="file" id="file" accept=".pdf, .jpg, .jpeg">
+        </div><br>
+        <div>
+            <label for="phone">Phone</label>
+            <input type="tel" name="phone" id="phone">
+        </div><br>
+        <div>
+            <label for="color">Color</label>
+            <input type="color" name="color" id="color">
+        </div><br>
+
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+    </form>
+
+    <div id="userDetails">
+        <!-- User details will be displayed here -->
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+
+    <script>
+        var usersData = []; // Array to store user data
+
+        function onsignup(event) {
+            event.preventDefault();
+
+            var formData = {
+                name: event.target.name.value,
+                email: event.target.email.value,
+                age: event.target.age.value,
+                date: event.target.date.value,
+                // Add more properties as needed
+            };
+
+            usersData.push(formData); // Add user data to the array
+
+            localStorage.setItem('users', JSON.stringify(usersData)); // Save data to local storage
+
+            axios.post("https://crudcrud.com/api/a813d8cb06794d79be21f8faa71b88ad/hello", formData)
+                .then((response) => {
+                    displayUsers(response.data);
+                    console.log(response)
+                })
+                .then((err) => {
+                    console.log(err)
+                })
+
+            console.log('User data stored in local storage:', usersData);
+        }
+
+        function displayUsers() {
+            var userDetailsDiv = document.getElementById('userDetails');
+            userDetailsDiv.innerHTML = '';
+
+            for (var i = 0; i < usersData.length; i++) {
+                userDetailsDiv.innerHTML += `
+                    <div>
+                        <h2>User Details (${i + 1}):</h2>
+                        <p>Name: ${usersData[i].name}</p>
+                        <p>Email: ${usersData[i].email}</p>
+                        <p>Age: ${usersData[i].age}</p>
+                        <p>Date of Birth: ${usersData[i].date}</p>
+                        <!-- Add more lines for other properties -->
+                        <button onclick="editUser(${i})">Edit</button>
+                        
+                        <button onclick="deleteUser(${i})">Delete</button>
+                        <hr>
+                    </div>
+                `;
+            }
+        }
+
+        function editUser(index) {
+            var confirmEdit = confirm("Do you really want to edit this user?");
+            if (confirmEdit) {
+                var editedData = {
+                    name: prompt("Enter new name:", usersData[index].name) || usersData[index].name,
+                    email: prompt("Enter new email:", usersData[index].email) || usersData[index].email,
+                    age: prompt("Enter new age:", usersData[index].age) || usersData[index].age,
+                    date: prompt("Enter new date of birth:", usersData[index].date) || usersData[index].date,
+                    // Add more properties as needed
+                };
+
+                usersData.splice(index, 1, editedData); // Replace user data in array
+                localStorage.setItem('users', JSON.stringify(usersData)); // Update local storage
+                displayUsers(); // Update the display
+            }
+        }
+
+        function deleteUser(index) {
+            var confirmDelete = confirm("Do you really want to delete this user?");
+            if (confirmDelete) {
+                usersData.splice(index, 1); // Remove user from array
+                localStorage.setItem('users', JSON.stringify(usersData)); // Update local storage
+                displayUsers(); // Update the display
+            }
+        }
+
+        // Load users' data from local storage when the page loads
+        window.onload = function () {
+            var storedUsers = JSON.parse(localStorage.getItem('users'));
+            if (storedUsers) {
+                usersData = storedUsers;
+                displayUsers();
+            }
+        };
+    </script>
+</body>
+
+</html>
