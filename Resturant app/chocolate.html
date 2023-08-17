@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Dynamic Candy Combinations</title>
+    <style>
+        .combination {
+            margin-bottom: 10px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <form>
+        <div>
+            <label for="price">Enter Amount</label>
+            <input type="number" name="price" id="price">
+            
+            <label for="name">Candy Name</label>
+            <select name="name" id="name">
+                <option value="1">Rs:1-Tofee</option>
+                <option value="5">Rs:5-KitKat</option>
+                <option value="10">Rs:10-Amul</option>
+                <option value="20">Rs:20-DairyMilk</option>
+            </select>
+            
+            <button type="button" onclick="generateCombinations()">Generate Combinations</button>
+        </div>
+    </form>
+
+    <div id="combinations"></div>
+
+    <div id="inventory">
+        <h2>Inventory</h2>
+        <p>Tofee: <span id="tofeeInventory">100</span></p>
+        <p>KitKat: <span id="kitkatInventory">100</span></p>
+        <p>Amul: <span id="amulInventory">100</span></p>
+        <p>DairyMilk: <span id="dairymilkInventory">100</span></p>
+    </div>
+
+    <div id="users"></div>
+
+    <script>
+        const candyOptions = [
+            { value: 20, name: 'DairyMilk', inventory: 100 },
+            { value: 10, name: 'Amul', inventory: 100 },
+            { value: 5, name: 'KitKat', inventory: 100 },
+            { value: 1, name: 'Tofee', inventory: 100 }
+        ];
+
+        function generateCombinations() {
+            const priceInput = document.getElementById("price");
+            const combinationsDiv = document.getElementById("combinations");
+            const enteredPrice = parseInt(priceInput.value);
+            const possibleCombinations = [];
+
+            generateCandyCombinations(enteredPrice, 0, []);
+            displayCombinations();
+
+            function generateCandyCombinations(remainingPrice, index, currentCombination) {
+                if (remainingPrice === 0) {
+                    possibleCombinations.push([...currentCombination]);
+                    return;
+                }
+
+                if (index >= candyOptions.length) {
+                    return;
+                }
+
+                const candyValue = candyOptions[index].value;
+
+                for (let quantity = 0; quantity <= remainingPrice / candyValue; quantity++) {
+                    currentCombination[index] = quantity;
+                    generateCandyCombinations(remainingPrice - candyValue * quantity, index + 1, currentCombination.slice());
+                }
+            }
+
+            function displayCombinations() {
+                combinationsDiv.innerHTML = '';
+
+                possibleCombinations.forEach(combination => {
+                    const combinationStr = combination.map((quantity, index) => {
+                        return `${quantity} ${candyOptions[index].name}${quantity > 1 ? 's' : ''}`;
+                    }).join(', ');
+
+                    const selectButton = document.createElement('button');
+                    selectButton.textContent = 'Select';
+                    selectButton.addEventListener('click', () => {
+                        updateInventory(combination);
+                        displayInventory();
+                    });
+
+                    const div = document.createElement('div');
+                    div.classList.add('combination');
+                    div.innerHTML = combinationStr;
+                    div.appendChild(selectButton);
+                    combinationsDiv.appendChild(div);
+                });
+            }
+        }
+
+        function updateInventory(selectedCombination) {
+            selectedCombination.forEach((quantity, index) => {
+                candyOptions[index].inventory -= quantity;
+            });
+        }
+
+        function displayInventory() {
+            candyOptions.forEach(candy => {
+                const inventorySpan = document.getElementById(`${candy.name.toLowerCase()}Inventory`);
+                inventorySpan.textContent = candy.inventory;
+            });
+        }
+
+        function fetchUsers() {
+            axios.get("https://crudcrud.com/api/1489cc8ce4584cee943aaecf344e4ed9/hello")
+                .then((response) => {
+                    const usersData = response.data;
+                    displayUsers(usersData);
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        }
+
+        function displayUsers(usersData) {
+            const usersDiv = document.getElementById("users");
+            usersDiv.innerHTML = '';
+
+            usersData.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.textContent = `User ID: ${user._id}, Name: ${user.name}, Email: ${user.email}`;
+                usersDiv.appendChild(userDiv);
+            });
+
+        }
+
+        fetchUsers();
+    </script>
+</body>
+
+</html>
